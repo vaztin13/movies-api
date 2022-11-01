@@ -1,0 +1,41 @@
+* {
+    font-family: 'Lato', sans-serif;
+}
+
+table img {
+    height: 250px;
+}
+
+tbody, td, tfoot, th, thead, tr {
+    padding: 20px;
+    text-align: center;
+}
+
+.d-flex {
+    justify-content: space-between;
+}
+
+#index-title {
+    padding: 20px;
+}
+
+#genre-index {
+    text-transform: uppercase;
+}
+
+.flex-shrink-0 img {
+    height: 500px;
+}
+
+#back {
+    padding: 20px;
+}
+
+#back a , #title-index a{
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+#movie-plot {
+    font-size: 20px;
+}
