@@ -8,8 +8,9 @@ $router = new Router();
 
 // define la tabla de ruteo
 $router->addRoute('movies', 'GET', 'ApiController', 'getAll');
-//$router->addRoute('tareas', 'POST', 'ApiController', 'crearTarea');
 $router->addRoute('movies/:ID', 'GET', 'ApiController', 'get');
+$router->addRoute('movies/:ID', 'DELETE', 'ApiController', 'delete');
+//$router->addRoute('tareas', 'POST', 'ApiController', 'crearTarea');
 
 // rutea
 $router->route($_GET["resource"], $_SERVER['REQUEST_METHOD']);
