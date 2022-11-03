@@ -46,9 +46,41 @@ class ApiController {
         }
     }
 
+    private function getBody() {
+        $bodyString = file_get_contents("php://input");
+        return json_decode($bodyString);
+    }
+ 
+    function post($params = null) {
+        $body = $this->getBody();
+        $id = $this->model->addMovie($body->title, $body->genre_type_id, $body->image, $body->plot, $body->year, $body->director);
+        //return $this->db->lastInsertId();
+       
+        //añadir validaciones con funcion aparte
+
+        if ($id != 0) {
+            $this->view->response("La pelicula fue añadida con el id '$id'.", 200);
+        } else {
+            $this->view->response("La pelicula no pudo ser creada.", 500);
+        }
+    }
 
 
+    function put($params = null) {
+        $movieID = $params[":ID"];
+        $body = $this->getBody();
 
+        //faltan validaciones
+
+        $movie = $this->model->getMovie($movieID);
+        
+        if ($movie) {
+            $this->model->updateMovie($movieID, $body->title, $body->genre_type_id, $body->image, $body->plot, $body->year, $body->director);
+            return $this->view->response("La pelicula con el id '$movieID' fue actualizada correctamente", 200);
+        } else {
+            return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
+        }
+    }
 
 
 }

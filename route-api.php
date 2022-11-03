@@ -10,7 +10,8 @@ $router = new Router();
 $router->addRoute('movies', 'GET', 'ApiController', 'getAll');
 $router->addRoute('movies/:ID', 'GET', 'ApiController', 'get');
 $router->addRoute('movies/:ID', 'DELETE', 'ApiController', 'delete');
-//$router->addRoute('tareas', 'POST', 'ApiController', 'crearTarea');
+$router->addRoute('movies/:ID', 'PUT', 'ApiController', 'put');
+$router->addRoute('movies', 'POST', 'ApiController', 'post');
 
 // rutea
 $router->route($_GET["resource"], $_SERVER['REQUEST_METHOD']);

@@ -20,6 +20,7 @@ class MovieModel {
     function addMovie($title, $genre, $image, $plot, $year, $director){
         $sentence = $this->db->prepare("INSERT INTO movies(title, genre_type_id, plot, image, year, director) VALUES(?, ?, ?, ?, ?, ?)");
         $sentence->execute(array($title, $genre, $plot, $image, $year, $director)); //Esto modifica orden de ejecucion en db
+        return $this->db->lastInsertId(); //BORRAR
     }
 
     function updateMovie($id ,$title, $genreType, $image, $plot, $year, $director) {
