@@ -19,10 +19,34 @@ class ApiController {
         $this->view = new ApiView();
     }
  
-    function getAll($params = null) { //falta añadir logica para 404
+/*     function getAll($params = null) { //falta añadir logica para 404
         $movies = $this->model->getMovies();
         return $this->view->response($movies, 200);
+    } */
+
+    function getAll(){
+        if (isset($_GET["genre_type_id"])) {
+            $movies = $this->model->findMoviesByGenre($_GET["genre_type_id"]); //filtra x genero
+        } elseif (isset($_GET["sortBy"]) && isset($_GET["sortDirection"])) {
+            if ($_GET["sortBy"] == "id") { // ordena manera ascendente o descendiente x ID
+                if ($_GET["sortDirection"] == "ASC") { // ?sortDirection=ASC&sortBy=id
+                    $movies = $this->model->findMoviesSortedByIdAsc();
+                } elseif ($_GET["sortDirection"] == "DESC") { // ?sortDirection=DESC&sortBy=id
+                    $movies = $this->model->findMoviesSortedByIdDesc();
+                }
+            } elseif ($_GET["sortBy"] == "year") { //  ordena manera ascendente o descendiente x categoria "year"
+                if ($_GET["sortDirection"] == "ASC") { // ?sortDirection=ASC&sortBy=year
+                    $movies = $this->model->findMoviesSortedByYearAsc();
+                } elseif ($_GET["sortDirection"] == "DESC") { // ?sortDirection=DESC&sortBy=year
+                    $movies = $this->model->findMoviesSortedByYearDesc();
+                }
+            } 
+        } else {
+            $movies = $this->model->getMovies();
+        }
+        return $this->view->response($movies, 200);
     }
+
 
     function get($params = null) { 
         $movieID = $params[":ID"];
