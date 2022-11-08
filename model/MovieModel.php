@@ -79,5 +79,12 @@ class MovieModel {
         return $movies; 
     }
 
+    function paginate($page, $limit) {
+        $sentence = $this->db->prepare("SELECT * FROM movies LIMIT $limit OFFSET $page");
+        $sentence->execute();
+        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
+        return $movies; 
+    }
+
     
 }
