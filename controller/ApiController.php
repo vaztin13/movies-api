@@ -19,13 +19,16 @@ class ApiController {
         $this->view = new ApiView();
     }
  
-/*     function getAll($params = null) { //falta añadir logica para 404
+    /*     function getAll($params = null) { //falta añadir logica para 404
         $movies = $this->model->getMovies();
         return $this->view->response($movies, 200);
     } */
 
     function getAll() {
         
+        $sortBy = $_GET['sortBy'] ?? null;
+        $order = $_GET['order'] ?? null;
+
         $page = $_GET['page'] ?? null;
         $limit = $_GET['limit'] ?? null;
         
@@ -33,31 +36,26 @@ class ApiController {
         
         if (isset($_GET["genre_type_id"])) {
             $movies = $this->model->findMoviesByGenre($_GET["genre_type_id"]); 
-        } 
+        } // falta else para tomar errores
         
-        // sortBy & sortDirection (ASC/DESC) 
+        // sortBy & order (ASC/DESC) 
 
-        else if (isset($_GET["sortBy"]) && isset($_GET["sortDirection"])) {
-            if ($_GET["sortBy"] == "id") { // ordena manera ascendente o descendiente x ID
-                
-                if ($_GET["sortDirection"] == "ASC") { // ?sortDirection=ASC&sortBy=id
-                    $movies = $this->model->findMoviesSortedByIdAsc();
-                } 
-                
-                else if ($_GET["sortDirection"] == "DESC") { // ?sortDirection=DESC&sortBy=id
-                    $movies = $this->model->findMoviesSortedByIdDesc();
+        else if (isset($sortBy)) {
+            if ($this->model->isValid($sortBy)) {
+                if (isset($order) && !in_array($order, ['ASC', 'DESC'])) {
+                    $this->view->response("El order debe ser 'ASC' o 'DESC' (Respetando mayúsculas)", 400);
+                    return;
                 }
-            } else if ($_GET["sortBy"] == "year") { //  ordena manera ascendente o descendiente x categoria "year"
-                
-                if ($_GET["sortDirection"] == "ASC") { // ?sortDirection=ASC&sortBy=year
-                    $movies = $this->model->findMoviesSortedByYearAsc();
-                } 
-                
-                else if ($_GET["sortDirection"] == "DESC") { // ?sortDirection=DESC&sortBy=year
-                    $movies = $this->model->findMoviesSortedByYearDesc();
+                if (isset($order)) {
+                    $movies = $this->model->sortAndOrder($sortBy, $order);
                 }
-            } 
-        } 
+                else {
+                    $movies = $this->model->sortAndOrder($sortBy, 'ASC'); //si no selecciona el order, automaticamente pasa ASC
+                }
+            } else {
+                $this->view->response("El campo $sortBy no existe.", 400);
+            }
+        }
         
         // paginacion
 
@@ -108,26 +106,19 @@ class ApiController {
             return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
         }
     }
-    
-    private function getBody() {
-        $bodyString = file_get_contents("php://input");
-        return json_decode($bodyString);
-    }
-    
+        
     function post($params = null) {
         $body = $this->getBody();
+        $this->validatePost($body); // valida inputs
         $id = $this->model->addMovie($body->title, $body->genre_type_id, $body->image, $body->plot, $body->year, $body->director);
-        //return $this->db->lastInsertId();
-        
-        //añadir validaciones con funcion aparte
-        
+        //return $this->db->lastInsertId(); borrar model en comentarios
+          
         if ($id != 0) {
-            $this->view->response("La pelicula fue añadida con el id '$id'.", 200);
+            $this->view->response("La pelicula fue añadida con el id '$id'.", 201);
         } else {
             $this->view->response("La pelicula no pudo ser creada.", 500);
         }
     }
-    
     
     function put($params = null) {
         $movieID = $params[":ID"];
@@ -144,6 +135,22 @@ class ApiController {
             return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
         }
     }
-    
+
+    private function getBody() {
+        $bodyString = file_get_contents("php://input");
+        return json_decode($bodyString);
+    }
+
+    private function validatePost($body) {
+        if (empty($body->title) 
+            || empty($body->genre_type_id) 
+            || empty($body->image) 
+            || empty($body->plot)
+            || empty($body->year)
+            || empty($body->director)) {
+            $this->view->response("Uno de los campos se encuentra vacio", 400);
+            die;
+        }
+    }
     
 }

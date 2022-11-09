@@ -20,7 +20,7 @@ class MovieModel {
     function addMovie($title, $genre, $image, $plot, $year, $director){
         $sentence = $this->db->prepare("INSERT INTO movies(title, genre_type_id, plot, image, year, director) VALUES(?, ?, ?, ?, ?, ?)");
         $sentence->execute(array($title, $genre, $plot, $image, $year, $director)); //Esto modifica orden de ejecucion en db
-        return $this->db->lastInsertId(); //BORRAR SI QUIERO CAMBIAR MODEL A COMENTARIOS
+        return $this->db->lastInsertId(); //BORRAR MODEL COMENTARIOS
     }
 
     function updateMovie($id ,$title, $genreType, $image, $plot, $year, $director) {
@@ -51,34 +51,6 @@ class MovieModel {
         return $movies; 
     }
 
-    function findMoviesSortedByIdAsc() {
-        $sentence = $this->db->prepare("SELECT * FROM movies ORDER BY id ASC");
-        $sentence->execute();
-        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
-        return $movies; 
-    }
-
-    function findMoviesSortedByIdDesc() {
-        $sentence = $this->db->prepare("SELECT * FROM movies ORDER BY id DESC");
-        $sentence->execute();
-        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
-        return $movies; 
-    }
-
-    function findMoviesSortedByYearAsc() {
-        $sentence = $this->db->prepare("SELECT * FROM movies ORDER BY year ASC");
-        $sentence->execute();
-        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
-        return $movies; 
-    }
-
-    function findMoviesSortedByYearDesc() {
-        $sentence = $this->db->prepare("SELECT * FROM movies ORDER BY year DESC");
-        $sentence->execute();
-        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
-        return $movies; 
-    }
-
     function paginate($page, $limit) {
         $sentence = $this->db->prepare("SELECT * FROM movies LIMIT $limit OFFSET $page");
         $sentence->execute();
@@ -86,5 +58,18 @@ class MovieModel {
         return $movies; 
     }
 
-    
+    function sortAndOrder($sortBy, $order) {
+        $sentence = $this->db->prepare("SELECT * FROM movies ORDER BY $sortBy $order");
+        $sentence->execute();
+        $movies = $sentence->fetchAll(PDO::FETCH_OBJ);
+        return $movies; 
+    }
+
+    // validaciones
+
+    function isValid($field) {
+        return in_array($field, ['id', 'title', 'plot', 'genre_type_id', 'year', 'director']);
+    }
+
+
 }
