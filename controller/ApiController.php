@@ -1,7 +1,6 @@
 <?php
 
-require_once "./model/MovieModel.php";
-require_once "./model/MovieTypeModel.php";
+require_once "./model/ApiCommentModel.php";
 require_once "./view/ApiView.php";
 
 
@@ -9,13 +8,11 @@ require_once "./view/ApiView.php";
 class ApiController {
 
     private $model;
-    private $movieTypeModel;
     private $view;
 
 
     function __construct() {
-        $this->movieTypeModel = new MovieTypeModel();
-        $this->model = new MovieModel();
+        $this->model = new ApiCommentModel();
         $this->view = new ApiView();
     }
  
@@ -34,8 +31,8 @@ class ApiController {
         
         //filtra x genero
         
-        if (isset($_GET["genre_type_id"])) {
-            $movies = $this->model->findMoviesByGenre($_GET["genre_type_id"]); 
+        if (isset($_GET["rating"])) {
+            $comments = $this->model->findCommentsByRating($_GET["rating"]); 
         } // falta else para tomar errores
         
         // sortBy & order (ASC/DESC) 
@@ -47,13 +44,13 @@ class ApiController {
                     return;
                 }
                 if (isset($order)) {
-                    $movies = $this->model->sortAndOrder($sortBy, $order);
+                    $comments = $this->model->sortAndOrder($sortBy, $order);
                 }
                 else {
-                    $movies = $this->model->sortAndOrder($sortBy, 'ASC'); //si no selecciona el order, automaticamente pasa ASC
+                    $comments = $this->model->sortAndOrder($sortBy, 'ASC'); //si no selecciona el order, automaticamente pasa ASC
                 }
             } else {
-                $this->view->response("El campo $sortBy no existe.", 400);
+                return $this->view->response("El campo $sortBy no existe.", 400);
             }
         }
         
@@ -75,64 +72,67 @@ class ApiController {
         }
 
         else if (isset($page) && isset($limit)) { 
-            $movies = $this->model->paginate($page, $limit);
+            $comments = $this->model->paginate($page, $limit);
         }  
         
                 
         else {
-            $movies = $this->model->getMovies();
+            $comments = $this->model->getComments();
         }
-        return $this->view->response($movies, 200);
+        return $this->view->response($comments, 200);
     }
     
     function get($params = null) { 
-        $movieID = $params[":ID"];
-        $movie = $this->model->getMovie($movieID);
-        if ($movie) {
-            return $this->view->response($movie, 200);
+        $commentID = $params[":ID"];
+        $comment = $this->model->getComment($commentID);
+        if ($comment) {
+            return $this->view->response($comment, 200);
         } else {
-            return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
+            return $this->view->response("El comentario con el id '$commentID' no existe", 404);
         }
     }
     
     function delete($params = null) {
-        $movieID = $params[":ID"];
-        $movie = $this->model->getMovie($movieID);
+        $commentID = $params[":ID"];
+        $comment = $this->model->getComment($commentID);
         
-        if ($movie) {
-            $this->model->deleteMovieFromDB($movieID);
-            return $this->view->response("La pelicula con el id '$movieID' fue borrada con exito", 200);
+        if ($comment) {
+            $this->model->deleteComment($commentID);
+            return $this->view->response("El comentario con el id '$commentID' fue borrado con exito", 200);
         } else {
-            return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
+            return $this->view->response("El comentario con el id '$commentID' no existe", 404);
         }
     }
         
     function post($params = null) {
         $body = $this->getBody();
         $this->validatePost($body); // valida inputs
-        $id = $this->model->addMovie($body->title, $body->genre_type_id, $body->image, $body->plot, $body->year, $body->director);
-        //return $this->db->lastInsertId(); borrar model en comentarios
-          
-        if ($id != 0) {
-            $this->view->response("La pelicula fue añadida con el id '$id'.", 201);
-        } else {
-            $this->view->response("La pelicula no pudo ser creada.", 500);
+        // $id = $this->model->addComment(); $id != 0 & 
+        
+        if (($body->rating <= 5)) {
+            $id = $this->model->addComment($body->comment, $body->user_id, $body->name, $body->movie_id, $body->rating);
+            $this->view->response("El comentario fue añadido con el id '$id'.", 201);
+       } else if (($body->rating > 5)) {
+            $this->view->response("El 'rating' debe ser menor o igual a 5.", 400);
+            die;
+       } else {
+            $this->view->response("El comentario no pudo ser creado.", 500);
         }
     }
     
     function put($params = null) {
-        $movieID = $params[":ID"];
+        $commentID = $params[":ID"];
         $body = $this->getBody();
         
         //faltan validaciones
         
-        $movie = $this->model->getMovie($movieID);
+        $comment = $this->model->getComment($commentID);
         
-        if ($movie) {
-            $this->model->updateMovie($movieID, $body->title, $body->genre_type_id, $body->image, $body->plot, $body->year, $body->director);
-            return $this->view->response("La pelicula con el id '$movieID' fue actualizada correctamente", 200);
+        if ($comment) {
+            $this->model->updateComment($commentID, $body->comment, $body->user_id, $body->name, $body->movie_id, $body->rating);
+            return $this->view->response("El comentario con el id '$commentID' fue actualizado correctamente", 200);
         } else {
-            return $this->view->response("La pelicula con el id '$movieID' no existe", 404);
+            return $this->view->response("El comentario con el id '$commentID' no existe", 404);
         }
     }
 
@@ -142,12 +142,11 @@ class ApiController {
     }
 
     private function validatePost($body) {
-        if (empty($body->title) 
-            || empty($body->genre_type_id) 
-            || empty($body->image) 
-            || empty($body->plot)
-            || empty($body->year)
-            || empty($body->director)) {
+        if (empty($body->comment) 
+            || empty($body->user_id) 
+            || empty($body->name) 
+            || empty($body->movie_id)
+            || empty($body->rating)) {
             $this->view->response("Uno de los campos se encuentra vacio", 400);
             die;
         }
