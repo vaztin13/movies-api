@@ -62,8 +62,8 @@ class ApiCommentModel {
 
     // PAGINATE
 
-    function paginate($page, $limit) {
-        $sentence = $this->db->prepare("SELECT * FROM comment LIMIT $limit OFFSET $page");
+    function paginate($page, $limit, $offset) {
+        $sentence = $this->db->prepare("SELECT * FROM comment LIMIT $limit OFFSET $offset");
         $sentence->execute();
         $comments = $sentence->fetchAll(PDO::FETCH_OBJ);
         return $comments; 

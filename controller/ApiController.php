@@ -15,11 +15,6 @@ class ApiController {
         $this->model = new ApiCommentModel();
         $this->view = new ApiView();
     }
- 
-    /*     function getAll($params = null) { //falta añadir logica para 404
-        $movies = $this->model->getMovies();
-        return $this->view->response($movies, 200);
-    } */
 
     function getAll() {
         
@@ -29,12 +24,24 @@ class ApiController {
         $page = $_GET['page'] ?? null;
         $limit = $_GET['limit'] ?? null;
         
+        $offset = $page * $limit - $limit;
+        
         //filtra x genero
         
         if (isset($_GET["rating"])) {
+            if ($_GET["rating"] > 5) {
+                return $this->view->response("El 'rating' no debe ser mayor a '5'", 400);
+            }
+            
+            else if ($_GET["rating"] < 1) {
+                return $this->view->response("El 'rating' no debe ser menor que '1'", 400);
+            }
+
+            else {
             $comments = $this->model->findCommentsByRating($_GET["rating"]); 
-        } // falta else para tomar errores
-        
+            }
+        }
+            
         // sortBy & order (ASC/DESC) 
 
         else if (isset($sortBy)) {
@@ -62,7 +69,7 @@ class ApiController {
         }
          
         else if (isset($page) && !ctype_digit($page)) { // error en caso de que page no sea un int
-            $this->view->response("Page tiene que ser un entero (valor mínimo = 0)", 400);
+            $this->view->response("Page tiene que ser un entero (valor mínimo = 1)", 400);
             return;
         }
         
@@ -71,11 +78,14 @@ class ApiController {
             return;
         }
 
-        else if (isset($page) && isset($limit)) { 
-            $comments = $this->model->paginate($page, $limit);
-        }  
+        else if ($offset < 0) {
+            return $this->view->response("Page tiene que tener un valor mínimo de 1", 400);
+        }
         
-                
+        else if (isset($page) && isset($limit)) { 
+            $comments = $this->model->paginate($page, $limit, $offset);
+        }  
+
         else {
             $comments = $this->model->getComments();
         }
@@ -123,7 +133,6 @@ class ApiController {
     function put($params = null) {
         $commentID = $params[":ID"];
         $body = $this->getBody();
-        
         //faltan validaciones
         
         $comment = $this->model->getComment($commentID);
@@ -151,5 +160,5 @@ class ApiController {
             die;
         }
     }
-    
+
 }
