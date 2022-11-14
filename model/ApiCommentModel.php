@@ -84,4 +84,11 @@ class ApiCommentModel {
         return in_array($field, ['id', 'comment', 'user_id', 'name', 'movie_id', 'rating']);
     }
 
+    function getMovieId($id) {
+        $sentence = $this->db->prepare("SELECT * FROM comment WHERE movie_id = ?");
+        $sentence->execute(array($id));
+        $comments = $sentence->fetchAll(PDO::FETCH_OBJ);
+        return $comments; 
+    }
+
 }

@@ -61,6 +61,15 @@ class ApiController {
             }
         }
         
+
+        // what movie = comments from api
+
+        else if (isset($_GET["movie_id"])) {
+            $comments = $this->model->getMovieId($_GET["movie_id"]); 
+            return $this->view->response($comments, 200);
+        }
+
+
         // paginacion
 
         else if ((!isset($page) && isset($limit)) || (isset($page) && !isset($limit))) { // error en caso de no tener alguno de los parametros

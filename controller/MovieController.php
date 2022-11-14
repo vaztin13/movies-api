@@ -71,6 +71,7 @@ class MovieController {
     }
 
     function viewMovie($id) {
+        session_start();
         //$this->authHelper->checkLoggedIn(); //usuario deslogeado puede ver detalles
         $genreType = $this->movieTypeModel->getMovieTypes();
         $movies = $this->movieTypeModel->filter($id);
