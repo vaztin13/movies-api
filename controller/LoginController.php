@@ -41,7 +41,11 @@ class LoginController {
             $_SESSION['USER_EMAIL'] = $user->email;
             $_SESSION['IS_LOGGED'] = true;
 
-            header("Location: " . BASE_URL);
+            if ($user->email == "admin@admin.com") {
+                header("Location: " . BASE_URL . "admin/manage-movies");
+            } else {
+                header("Location: " . BASE_URL);
+            }
         } else {
             $this->view->showLogin("Acceso denegado");
         }

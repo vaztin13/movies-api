@@ -29,9 +29,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="logout">Logout({$smarty.session.USER_EMAIL})</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="admin/manage-movies">ADMIN</a>
-                    </li>
                 {/if}
             </ul>
         </div>
