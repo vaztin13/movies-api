@@ -142,8 +142,7 @@ class ApiController {
     function put($params = null) {
         $commentID = $params[":ID"];
         $body = $this->getBody();
-        //faltan validaciones
-        
+
         $comment = $this->model->getComment($commentID);
         
         if ($comment) {
